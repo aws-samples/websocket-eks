@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: websocket-microservice
+  labels:
+    app: websocket-restapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket-restapp
+  template:  
+    metadata:
+      labels: 
+        app: websocket-restapp
+    spec:
+      containers:
+        - name: websocket-restapp
+          image: <ecr image>
+          ports: 
+            - containerPort: 8501         
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8501
+            initialDelaySeconds: 60
+            periodSeconds: 10          
+      serviceAccount: <IRSA ServiceAccount>

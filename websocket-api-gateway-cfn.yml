@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  IntegrationUri:
+    Type: String
+    Description: The HTTP endpoint URL for integration
+
+Resources:
+  WebSocketApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: MyWebSocketApi2
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: $request.body.action
+  Integration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: HTTP_PROXY
+      IntegrationUri: !Join [ '/' ,[!Ref IntegrationUri, "connect" ]]
+      IntegrationMethod: POST
+      PayloadFormatVersion: '1.0'
+  DefaultIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref WebSocketApi
+      IntegrationType: HTTP
+      IntegrationUri: !Ref IntegrationUri
+      IntegrationMethod: POST
+      PayloadFormatVersion: '1.0'
+      TemplateSelectionExpression: \$default
+      RequestTemplates:
+        $default: |
+          {
+            "myConnectionIdProperty": "$context.connectionId",
+            "myBody": "$input.body",
+            "domain": "$context.domainName",
+            "stage": "$context.stage"
+          }
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $connect
+      Target: !Sub integrations/${Integration}
+  DefaultRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $default
+      Target: !Sub integrations/${DefaultIntegration}
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref WebSocketApi
+      RouteKey: $disconnect
+      Target: !Sub integrations/${Integration}
+  Deployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn: ['DefaultRoute','ConnectRoute','DisconnectRoute']
+    Properties:
+      ApiId: !Ref WebSocketApi
+  Stage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref WebSocketApi
+      StageName: Prod
+      DeploymentId: !Ref Deployment
+
+Outputs:
+  WebSocketURL:
+    Description: "WSS URL"
+    Value: !Join [ '', [ 'wss://', !Ref WebSocketApi, '.execute-api.',!Ref 'AWS::Region','.amazonaws.com/',!Ref 'Stage'] ]
