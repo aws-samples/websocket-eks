@@ -121,7 +121,11 @@ kubectl delete -f deployment-Service.yml
 Delete any other resources created as part of pre-requisite steps.
 
 
-----
-Copyright 2022 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+## Security
 
-SPDX-License-Identifier: MIT-0
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file.
+
