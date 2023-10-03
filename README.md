@@ -53,7 +53,7 @@ Implementation Steps
 <b>Steps</b>
 1. Download the project files:
 
-git clone <https://github.com/djiten75/websocket-eks/>
+git clone https://github.com/aws-samples/websocket-eks
 
 cd websocket-eks
 
